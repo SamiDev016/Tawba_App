@@ -1,25 +1,56 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-String arabicFont = "queran";
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+int bookmarkedAyah = 1;
+int bookmarkedSura = 1;
+bool fabIsClicked = true;
+
+final ItemScrollController itemScrollController = ItemScrollController();
+final ItemPositionsListener itemPositionsListener =
+    ItemPositionsListener.create();
+
+String arabicFont = 'quran';
 double arabicFontSize = 28;
 double mushafFontSize = 40;
 
-Uri quranAppUrl = Uri.parse("http://google.com");
+Uri quranAppurl = Uri.parse('https://github.com/itsherifahmed');
 
-Future saveSetting() async {
+Future saveSettings() async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setInt("arabicFontSize", arabicFontSize.toInt());
-  await prefs.setInt("mushafFontSize", mushafFontSize.toInt());
+  await prefs.setInt('arabicFontSize', arabicFontSize.toInt());
+  await prefs.setInt('mushafFontSize', mushafFontSize.toInt());
 }
 
 Future getSettings() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    arabicFontSize = (await prefs.getInt("arabicFontSize")) as double;
-    mushafFontSize = (await prefs.getInt("mushafFontSize")) as double;
-  } catch (e) {
+    arabicFontSize = await prefs.getInt('arabicFontSize')!.toDouble();
+    mushafFontSize = await prefs.getInt('mushafFontSize')!.toDouble();
+  } catch (_) {
     arabicFontSize = 28;
     mushafFontSize = 40;
+  }
+}
+
+saveBookMark(surah, ayah) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt("surah", surah);
+  await prefs.setInt("ayah", ayah);
+}
+
+readBookmark() async {
+  print("read book mark called");
+  final prefs = await SharedPreferences.getInstance();
+  try {
+    bookmarkedAyah = prefs.getInt('ayah')!;
+    bookmarkedSura = prefs.getInt('surah')!;
+    return true;
+  } catch (e) {
+    return false;
   }
 }
 
@@ -256,3 +287,16 @@ List<int> noOfVerses = [
   5,
   6
 ];
+
+List arabic = [];
+List malayalam = [];
+List quran = [];
+
+Future readJson() async {
+  final String response =
+      await rootBundle.loadString("assets/hafs_smart_v8.json");
+  final data = json.decode(response);
+  arabic = data["quran"];
+  malayalam = data["malayalam"];
+  return quran = [arabic, malayalam];
+}
